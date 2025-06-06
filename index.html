@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asteroid Game</title>
+</head>
+<body>
+    <canvas id="gameCanvas" width= "700%" height ="500"></canvas>
+    <script>
+        const FPS = 30
+        const ShipSize = 30 //ship height in pixels
+        const TURN_SPEED = 360 // degrees per second
+        const SHIP_Thrust = 5; //acceleration of ship in pixels per sec^2
+        // @type {HTMLCanvasElement}
+        var canv = document.getElementById("gameCanvas")
+        var ctx = canv.getContext("2d")
+
+        var ship = {
+            x: canv.width / 2,
+            y: canv.height/ 2,
+            r:ShipSize/ 2, //radius
+            a: 90 / 180 * Math.PI, //convert to radians from degrees, angle
+            rot: 0, // rotation
+            thrusting: false,
+            thrust: {
+                x: 0,
+                y: 0
+            }
+        }
+
+        // set event handlers
+        document.addEventListener('keydown', keyDown) //key down means key is pressed
+        document.addEventListener('keyup', keyUp)  //key up means key is released
+        //set the game loop
+        setInterval(update, 1000/FPS)
+
+//functions
+
+        function keyDown(k){
+            switch(k.keyCode){
+                case 37: //rotate ship left, left arrow
+                    ship.rot = TURN_SPEED / 180 * Math.PI / FPS; 
+                    //turn speed, convert to radians, then divide by frame rate to preserve speed
+                    break;
+
+                case 38: // move forward, up arrow
+                    ship.thrusting = true;
+                    break;
+                case 39: //rotate right, right arrow
+                    ship.rot = -TURN_SPEED / 180 * Math.PI / FPS; 
+                    break;
+            }
+        }
+
+        function keyUp(k){
+            switch(k.keyCode){
+                case 37: //stop rotating left
+                    ship.rot = 0; 
+                    //turn speed, convert to radians, then divide by frame rate to preserve speed
+                    break;
+
+                case 38: // stop moving forward
+                    ship.thrusting = false;
+                    break;
+                case 39: //stop rotating right
+                    ship.rot = 0; 
+                    break;
+            }            
+        }
+        function update(){
+            //draw space background
+            ctx.fillStyle = "black"
+            //Place rectangle at origin and set width and height
+            ctx.fillRect(0, 0, canv.width, canv.height)
+
+            //thrusting the ship
+
+            if (ship.thrusting){
+                ship.thrust.x += SHIP_Thrust * Math.cos(ship.a) / FPS; //divide by fps
+                ship.thrust.y -= SHIP_Thrust * Math.sin(ship.a) / FPS;
+
+            }
+
+            //draw ship (Triangle)
+            ctx.strokeStyle = "Red",
+            ctx.lineWidth = ShipSize / 20
+            ctx.beginPath()
+            ctx.moveTo(//nose of ship
+                ship.x + 4 / 3 * ship.r * Math.cos(ship.a),
+                ship.y - 4 / 3 * ship.r * Math.sin(ship.a)
+                //negative represents upwards on screen
+            )
+
+            ctx.lineTo(//left
+            ship.x - ship.r * ( 2 / 3 * Math.cos(ship.a) + Math.sin(ship.a)),
+            ship.y + ship.r * ( 2 / 3 * Math.sin(ship.a)- Math.cos(ship.a))
+            )
+
+            ctx.lineTo(//bottom
+            ship.x - ship.r * ( 2 / 3 * Math.cos(ship.a) - Math.sin(ship.a)),
+            ship.y + ship.r * (  2 / 3 *Math.sin(ship.a) + Math.cos(ship.a))
+            )
+            ctx.closePath()
+
+            ctx.stroke()
+
+            //rotate ship
+            ship.a += ship.rot
+
+            //move ship
+            ship.x += ship.thrust.x;
+            ship.y += ship.thrust.y;
+
+
+            //center dot
+            ctx.fillStyle = "white"
+            ctx.fillRect(ship.x - 1, ship.y - 1, 2, 2)
+        }
+
+    </script>
+</body>
+</html>
